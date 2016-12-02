@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="600" Width="1000">
     <Canvas Name="gameCanvas"
-            Background="HotPink">
+            Background="Pink">
         
     </Canvas>
 </Window>

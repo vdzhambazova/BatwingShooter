@@ -55,6 +55,15 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Engines\GameEngine.cs" />
+    <Compile Include="Misc\KeyDownEventArgs.cs" />
+    <Compile Include="Renderer\IRenderer.cs" />
+    <Compile Include="GameObjects\Batwing.cs" />
+    <Compile Include="GameObjects\Enemy.cs" />
+    <Compile Include="GameObjects\Position.cs" />
+    <Compile Include="GameObjects\Projectile.cs" />
+    <Compile Include="GameObjects\Size.cs" />
+    <Compile Include="Renderer\WpfRenderer.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -63,6 +72,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="GameObjects\GameObject.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -86,6 +96,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="BatwingClassDiagram.cd" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -94,6 +105,21 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\batwing.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\gotham-city.jpeg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Projectiles\yamato.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\enemies\boss-enemy.png" />
+    <Resource Include="Images\enemies\dragon1.gif" />
+    <Resource Include="Images\enemies\enemy.png" />
+    <Resource Include="Images\enemies\mutalisk.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

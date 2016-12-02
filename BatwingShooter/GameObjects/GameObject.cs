@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace BatwingShooter.GameObjects
+﻿namespace BatwingShooter.GameObjects
 {
-    class GameObject
+    public abstract class GameObject
     {
+        public Size Bounds { get; set; }
+
+        public Position Position { get; set; }
     }
 }

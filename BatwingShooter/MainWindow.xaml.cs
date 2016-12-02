@@ -1,17 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿using System.Windows;
+using BatwingShooter.Engines;
+using BatwingShooter.Renderer;
 
 namespace BatwingShooter
 {
@@ -23,13 +12,12 @@ namespace BatwingShooter
         public MainWindow()
         {
             InitializeComponent();
-            this.gameCanvas.Children.Add(
-                new Rectangle
-                {
-                    Width = 100,
-                    Height = 200,
-                    Fill = Brushes.Black
-                });
+            WpfRenderer renderer = new WpfRenderer(this.gameCanvas);
+            this.Engine = new GameEngine(renderer);
+            this.Engine.InitGame();
+            this.Engine.StartGame();
         }
+
+        public GameEngine Engine { get; set; }
     }
 }
