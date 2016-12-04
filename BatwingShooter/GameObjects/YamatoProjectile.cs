@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace BatwingShooter.GameObjects
 {
-    public class Enemy : GameObject
+    public class YamatoProjectile : Projectile
     {
+        public override bool IsAlive => true;
     }
 }

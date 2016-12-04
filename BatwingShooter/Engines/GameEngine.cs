@@ -1,111 +1,236 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.Remoting.Channels;
+using System.Linq;
 using System.Windows.Threading;
+using BatwingShooter.Collections;
 using BatwingShooter.GameObjects;
+using BatwingShooter.GameObjects.Enemies;
+using BatwingShooter.GameObjects.Factories;
 using BatwingShooter.Misc;
 using BatwingShooter.Renderer;
 
 namespace BatwingShooter.Engines
 {
-    public class GameEngine
+    public class GameEngine : IGameEngine
     {
-        private const int BatwingWidth = 100;
-        private const int BatwingHeight = 100;
-        private const int TimerTickIntervalInMilliSeconds = 100;
-        private const int BatmanSpeed = 15;
+        private const int BatwingSizeHeight = 100;
+        private const int BatwingSizeWidth = 100;
+        private const int BatmanSpeed = 25;
+        private const int TimerTickIntervalInMilliseconds = 100;
+        private const int SpawnEnemyChange = 90;
+        private const int ScoreForKill = 45;
+        private const int ScoreForTick = 10;
+        private const int ProjectileMoveSpeed = 105;
+        private const int EnemyMoveSpeed = -25;
 
         private IRenderer renderer;
+        private ProjectileFactory projectilesFactory;
+        private EnemyFactory enemiesFactory;
+        private DispatcherTimer timer;
 
+        public int HighScore { get; private set; }
+          
         static Random rand = new Random();
-        
+
+        public Batwing Batwing { get; private set; }
+
+        public List<GameObject> Projectiles { get; private set; }
+
+        public List<GameObject> Enemies { get; private set; }
+
+        public List<GameObject> GameObjects { get; private set; }
+
+        public ICollisionDetector CollisionDetector { get; private set; }
+
+        Batwing IGameEngine.Batwing
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
 
         public GameEngine(IRenderer renderer)
         {
             this.renderer = renderer;
-            this.renderer.UiActionHappened += this.HandleUiActionHappened;
+            this.renderer.UiActionHappened +=
+                HandleUiActionHappened;
+
             this.Projectiles = new List<GameObject>();
+            this.projectilesFactory = new ProjectileFactory();
+
+            this.Enemies = new List<GameObject>();
+            this.enemiesFactory = new EnemyFactory();
+
+            this.GameObjects = new List<GameObject>();
+
+            this.CollisionDetector = new ComplexCollisionDetector();
         }
 
-        public IList<GameObject> Projectiles { get; set; }
-
-        private void HandleUiActionHappened(object sender, KeyDownEventArgs kdea)
+        private void HandleUiActionHappened(object sender, KeyDownEventArgs e)
         {
-            if (kdea.Command == GameCommand.MoveDown)
+            if (e.Command == GameCommand.Fire)
             {
-                var top = this.Batwing.Position.Top + BatmanSpeed;
-                var left = this.Batwing.Position.Left;
-
-                this.Batwing.Position = new Position(left, top);
-
+                FireProjectile();
             }
-            else if (kdea.Command == GameCommand.MoveUp)
+            else if (e.Command == GameCommand.PlayPause)
             {
-                var top = this.Batwing.Position.Top - BatmanSpeed;
-                var left = this.Batwing.Position.Left;
-
-                this.Batwing.Position = new Position(left, top);
+                PlayPauseGame();
             }
-            else if (kdea.Command == GameCommand.Fire)
+            else
             {
-                this.FireProjectile();
+                int updateTop = 0;
+                int updateLeft = 0;
+
+                switch (e.Command)
+                {
+                    case GameCommand.MoveUp:
+                        updateTop = -BatmanSpeed;
+                        break;
+                    case GameCommand.MoveDown:
+                        updateTop = +BatmanSpeed;
+                        break;
+                    case GameCommand.MoveLeft:
+                        updateLeft = -BatmanSpeed;
+                        break;
+                    case GameCommand.MoveRight:
+                        updateLeft = +BatmanSpeed;
+                        break;
+                    default:
+                        break;
+                }
+
+                int left = Batwing.Position.Left + updateLeft;
+                int top = Batwing.Position.Top + updateTop;
+                var position = new Position(left, top);
+                if (renderer.IsInBounds(position))
+                {
+                    Batwing.Position = position;
+                }
+            }
+        }
+
+        private void PlayPauseGame()
+        {
+            if (timer.IsEnabled)
+            {
+                timer.Stop();
+            }
+            else
+            {
+                timer.Start();
             }
         }
 
         private void FireProjectile()
         {
-            var projectileTop = new Projectile()
-            {
-                Position = new Position(this.Batwing.Position.Left+ this.Batwing.Bounds.Width, this.Batwing.Position.Top),
-                Bounds = new Size(50,15)
-            };
+            int top = Batwing.Position.Top;
+            int left = Batwing.Position.Left;
+            var projectileTop = projectilesFactory.Get(left, top);
+            var projectileBottom = projectilesFactory.Get(left, top + Batwing.Bounds.Height);
+            Projectiles.Add(projectileTop);
+            Projectiles.Add(projectileBottom);
 
-            var projectileBottom = new Projectile()
-            {
-                Position = new Position(this.Batwing.Position.Left + this.Batwing.Bounds.Width, this.Batwing.Position.Top + this.Batwing.Bounds.Height),
-                Bounds = new Size(50, 15)
-            };
-
-            this.Projectiles.Add(projectileTop);
-            this.Projectiles.Add(projectileBottom);
-        }
-
-        public void InitGame()
-        {
-            this.Batwing = new Batwing
-            {
-                Position = new Position(0, (this.renderer.ScreenHeight - BatwingHeight) / 2),
-                Bounds = new Size(BatwingWidth, BatwingHeight),
-            };
-
-            this.Projectiles.Clear();
-        }
-
-        public Batwing Batwing { get; set; }
-
-        public void StartGame()
-        {
-            var timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromMilliseconds(TimerTickIntervalInMilliSeconds);
-            timer.Tick += this.GameLoop;
-
-            timer.Start();
+            GameObjects.Add(projectileTop);
+            GameObjects.Add(projectileBottom);
         }
 
         private void GameLoop(object sender, EventArgs e)
         {
-            this.renderer.Clear();
-            this.renderer.Draw(this.Batwing);
+            HighScore += ScoreForTick;
+            if (Enemies.Any(enemy => CollisionDetector.AreCollided(Batwing, enemy)))
+            {
+                timer.Stop();
+                renderer.ShowEndGameScreen(HighScore);
+                return;
+            }
 
+            renderer.Clear();
+            renderer.Draw(Batwing);
+
+            if (rand.Next(100) < SpawnEnemyChange)
+            {
+                var enemy = enemiesFactory.Get(renderer.ScreenWidth, rand.Next(renderer.ScreenHeight));
+                Enemies.Add(enemy);
+                GameObjects.Add(enemy);
+            }
+
+            KillEnemiesIfColliding();
+
+            HighScore += Enemies.Count(enemy => !enemy.IsAlive) * ScoreForKill;
+            RemoveNotAliveGameObjects();
+            UpdateObjectsPositions();
+            DrawGameObjects();
+        }
+
+        private void KillEnemiesIfColliding()
+        {
             foreach (var projectile in Projectiles)
             {
-                var top = projectile.Position.Top;
-                var left = projectile.Position.Left + 55;
-
-                projectile.Position = new Position(left, top);
-                this.renderer.Draw(projectile);
+                foreach (var enemy in Enemies)
+                {
+                    if (CollisionDetector.AreCollided(projectile, enemy))
+                    {
+                        enemy.IsAlive = false;
+                        projectile.IsAlive = false;
+                        break;
+                    }
+                }
             }
+        }
+
+        private void UpdateObjectsPositions()
+        {
+            foreach (var go in GameObjects)
+            {
+                int top = 0;
+                int left = 0;
+                if (go is Projectile)
+                {
+                    top = go.Position.Top;
+                    left = go.Position.Left + ProjectileMoveSpeed;
+                }
+                else if (go is Enemy)
+                {
+                    top = go.Position.Top + rand.Next(-10, 10);
+                    left = go.Position.Left + EnemyMoveSpeed;
+                }
+                go.Position = new Position(left, top);
+            }
+        }
+
+        private void DrawGameObjects()
+        {
+            GameObjects.ForEach(go => renderer.Draw(go));
+        }
+
+        private void RemoveNotAliveGameObjects()
+        {
+            GameObjects.Where(go => !renderer.IsInBounds(go.Position))
+                .ForEach(go => go.IsAlive = false);
+
+            GameObjects.RemoveAll(go => !go.IsAlive);
+            Enemies.RemoveAll(enemy => !enemy.IsAlive);
+            Projectiles.RemoveAll(projectile => !projectile.IsAlive);
+        }
+
+        public void InitGame()
+        {
+            Batwing = new Batwing
+            {
+                Position = new Position(0, (renderer.ScreenHeight - BatwingSizeHeight) / 2),
+                Bounds = new Size(BatwingSizeWidth, BatwingSizeHeight),
+            };
+            Projectiles.Clear();
+        }
+
+        public void StartGame()
+        {
+            timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromMilliseconds(TimerTickIntervalInMilliseconds);
+            //game loop
+            timer.Tick += GameLoop;
+            timer.Start();
         }
     }
 }

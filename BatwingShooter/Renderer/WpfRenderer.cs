@@ -1,45 +1,59 @@
-﻿using System.Windows.Ink;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using BatwingShooter.Misc;
-
-namespace BatwingShooter.Renderer
+﻿namespace BatwingShooter.Renderer
 {
+    
     using System;
-    using System.Collections.Generic;
+    using System.Windows;
     using System.Windows.Controls;
+    using GameObjects.Enemies;
+    using System.Windows.Input;
+    using System.Windows.Media;
+    using Misc;
+    using System.Windows.Media.Imaging;
+    using System.Windows.Shapes;
+
+    using Windows;
     using GameObjects;
 
     public class WpfRenderer : IRenderer
     {
-        private Canvas canvas;
+        private const string BatwingImagePath = "/Images/batwing.png";
+        private const string YamatoImagePath = "/Images/projectiles/yamato.png";
+        private const string EnemyImagePath = "/Images/enemies/enemy.png";
+        private const string BossEnemyImagePath = "/Images/enemies/boss-enemy.png";
 
         public event EventHandler<KeyDownEventArgs> UiActionHappened;
+
+        private Canvas canvas;
+
         public WpfRenderer(Canvas canvas)
         {
             this.canvas = canvas;
-            (this.canvas.Parent as MainWindow).KeyDown += (sender, args) =>
-            {
-                var key = args.Key;
-                if (key == Key.Down)
-                {
-                    this.UiActionHappened(this, new KeyDownEventArgs(GameCommand.MoveDown));
-                }
-                else if (key == Key.Up)
-                {
-                    this.UiActionHappened(this, new KeyDownEventArgs(GameCommand.MoveUp));
-                }
-                else if (key == Key.Space)
-                {
-                    this.UiActionHappened(this, new KeyDownEventArgs(GameCommand.Fire));
-                }
-            };
+            this.ParentWindow.KeyDown += HandleKeyDown;
         }
 
-        public int ScreenWidth => (int)this.canvas.Width;
-        public int ScreenHeight => (int)(this.canvas.Parent as MainWindow).Height;
+        public void ShowEndGameScreen(int highScore)
+        {
+            new GameOverWindow(highScore).Show();
+            ParentWindow.Close();
+        }
+
+       
+        public Window ParentWindow
+        {
+            get
+            {
+                var parent = canvas.Parent;
+                while (!(parent is Window))
+                {
+                    parent = LogicalTreeHelper.GetParent(parent);
+                }
+                return parent as Window;
+            }
+        }
+
+        public int ScreenWidth => (int)ParentWindow.ActualWidth;
+
+        public int ScreenHeight => (int)ParentWindow.Height;
 
         public void Draw(params GameObject[] gameObjects)
         {
@@ -47,71 +61,136 @@ namespace BatwingShooter.Renderer
             {
                 if (gameObject is Batwing)
                 {
-                    this.DrawBatwing(gameObject);
+                    DrawBatwing(gameObject);
+                }
+                else if (gameObject is BossEnemy)
+                {
+                    this.DrawBossEnemy(gameObject);
                 }
                 else if (gameObject is Enemy)
                 {
-                    this.DrawEnemy(gameObject);
+                    DrawEnemy(gameObject);
+                }
+                else if (gameObject is YamatoProjectile)
+                {
+                    DrawYamato(gameObject);
                 }
                 else if (gameObject is Projectile)
                 {
-                    this.DrawProjectile(gameObject);
+                    DrawProjectile(gameObject);
                 }
             }
 
         }
 
+        private void DrawYamato(GameObject yamato)
+        {
+            var image = this.CreateImageForCanvas(YamatoImagePath, yamato.Position, yamato.Bounds);
+            this.canvas.Children.Add(image);
+        }
+
         private void DrawProjectile(GameObject projectile)
         {
-            var ell = new Rectangle()
+            var rect = new Border
             {
                 Width = projectile.Bounds.Width,
                 Height = projectile.Bounds.Height,
-                Fill = Brushes.Red,
-                StrokeThickness = 3
+                Background = Brushes.Orange,
+                CornerRadius = new CornerRadius(2, 5, 5, 2)
             };
 
-            Canvas.SetLeft(ell, projectile.Position.Left);
-            Canvas.SetTop(ell, projectile.Position.Top);
-            this.canvas.Children.Add(ell);
+            Canvas.SetLeft(rect, projectile.Position.Left);
+            Canvas.SetTop(rect, projectile.Position.Top);
+            this.canvas.Children.Add(rect);
         }
 
         private void DrawEnemy(GameObject enemy)
         {
-            var ell = new Ellipse()
-            {
-                Width = enemy.Bounds.Width,
-                Height = enemy.Bounds.Height,
-                Fill = Brushes.Green,
-                StrokeThickness = 3
-            };
+            var image = CreateImageForCanvas(EnemyImagePath, enemy.Position, enemy.Bounds);
+            this.canvas.Children.Add(image);
+        }
 
-            Canvas.SetLeft(ell, enemy.Position.Left);
-            Canvas.SetTop(ell, enemy.Position.Top);
-            this.canvas.Children.Add(ell);
+        private void DrawBossEnemy(GameObject enemy)
+        {
+            var image = CreateImageForCanvas(BossEnemyImagePath, enemy.Position, enemy.Bounds);
+            this.canvas.Children.Add(image);
+        }
+
+        private void DrawBigEnemy(GameObject bigEnemy)
+        {
+            var enemy = new Rectangle
+            {
+                Fill = Brushes.Black,
+                Width = bigEnemy.Bounds.Width,
+                Height = bigEnemy.Bounds.Height
+            };
+            Canvas.SetLeft(enemy, bigEnemy.Position.Left);
+            Canvas.SetTop(enemy, bigEnemy.Position.Top);
+            this.canvas.Children.Add(enemy);
         }
 
         private void DrawBatwing(GameObject batwing)
         {
-
-            Image batwingImage = new Image();
-            BitmapImage image = new BitmapImage();
-            image.BeginInit();
-            image.UriSource = new Uri("/Images/batwing.png", UriKind.Relative);
-            image.EndInit();
-
-            batwingImage.Source = image;
-            batwingImage.Width = batwing.Bounds.Width;
-            batwingImage.Height = batwing.Bounds.Height;
-
-            Canvas.SetLeft(batwingImage, batwing.Position.Left);
-            Canvas.SetTop(batwingImage, batwing.Position.Top);
-            this.canvas.Children.Add(batwingImage);
+            var image = this.CreateImageForCanvas(BatwingImagePath, batwing.Position, batwing.Bounds);
+            this.canvas.Children.Add(image);
         }
 
         public void Clear()
         {
-            this.canvas.Children.Clear();
+            canvas.Children.Clear();
         }
+
+        public bool IsInBounds(Position position)
+        {
+            return 0 <= position.Left && position.Left <= ScreenWidth &&
+                   0 <= position.Top && position.Top <= ScreenHeight;
+        }
+
+        private Image CreateImageForCanvas(string path, Position position, GameObjects.Size bounds)
+        {
+            Image image = new Image();
+            BitmapImage bitmap = new BitmapImage();
+            bitmap.BeginInit();
+            bitmap.UriSource = new Uri(path, UriKind.RelativeOrAbsolute);
+            bitmap.EndInit();
+
+            image.Source = bitmap;
+            image.Width = bounds.Width;
+            image.Height = bounds.Height;
+
+            Canvas.SetLeft(image, position.Left);
+            Canvas.SetTop(image, position.Top);
+            return image;
+        }
+
+        private void HandleKeyDown(object sender, KeyEventArgs args)
+        {
+            var key = args.Key;
+            GameCommand command;
+            switch (key)
+            {
+                case Key.Up:
+                    command = GameCommand.MoveUp;
+                    break;
+                case Key.Down:
+                    command = GameCommand.MoveDown;
+                    break;
+                case Key.Left:
+                    command = GameCommand.MoveLeft;
+                    break;
+                case Key.Right:
+                    command = GameCommand.MoveRight;
+                    break;
+                case Key.Enter:
+                    command = GameCommand.PlayPause;
+                    break;
+                default:
+                    command = GameCommand.Fire;
+                    break;
+            }
+
+            this.UiActionHappened(this, new KeyDownEventArgs(command));
+        }
+
     }
 }

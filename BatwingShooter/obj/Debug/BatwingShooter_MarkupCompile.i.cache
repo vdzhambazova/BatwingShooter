@@ -10,11 +10,11 @@ none
 false
 DEBUG;TRACE
 C:\Users\Teo\Documents\Visual Studio 2015\Projects\BatwingShoot\BatwingShooter\App.xaml
-11151548125
+4-1600549366
 
-19312860946
+37-1163145335
 131569487696
-MainWindow.xaml;
+Windows\GameOverWindow.xaml;Windows\GameWindow.xaml;Windows\HighScoreWindow.xaml;Windows\InitGameWindow.xaml;
 
 False
 

@@ -10,7 +10,10 @@ namespace BatwingShooter.Misc
     {
         MoveUp,
         MoveDown,
-        Fire
+        Fire,
+        MoveLeft,
+        MoveRight,
+        PlayPause
     }
 
     public class KeyDownEventArgs : EventArgs
@@ -19,7 +22,7 @@ namespace BatwingShooter.Misc
 
         public KeyDownEventArgs(GameCommand command)
         {
-            this.Command = command;
+            Command = command;
         }
     }
 }

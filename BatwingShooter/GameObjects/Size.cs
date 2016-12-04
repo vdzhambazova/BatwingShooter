@@ -4,8 +4,8 @@
     {
         public Size(int width, int height)
         {
-            this.Width = width;
-            this.Height = height;
+            Width = width;
+            Height = height;
         }
         public int Width { get; set; }
 

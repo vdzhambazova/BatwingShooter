@@ -15,6 +15,10 @@ namespace BatwingShooter.Renderer
 
         void Clear();
 
+        bool IsInBounds(Position position);
+
+        void ShowEndGameScreen(int highScore);
+
         event EventHandler<KeyDownEventArgs> UiActionHappened;
     }
 }

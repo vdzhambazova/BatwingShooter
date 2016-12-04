@@ -4,8 +4,8 @@
     {
         public Position(int left, int top)
         {
-            this.Left = left;
-            this.Top = top;
+            Left = left;
+            Top = top;
         }
         public int Left { get; set; }
 

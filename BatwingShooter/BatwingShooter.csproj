@@ -55,28 +55,63 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Extensions\CollectionExtensions.cs" />
+    <Compile Include="GameObjects\Enemies\BigEnemy.cs" />
+    <Compile Include="GameObjects\Enemies\BossEnemy.cs" />
+    <Compile Include="Engines\IGameEngine.cs" />
+    <Compile Include="Data\IHighscoreStorage.cs" />
+    <Compile Include="Misc\ICollisionDetector.cs" />
+    <Compile Include="Misc\ComplexCollisionDetector.cs" />
     <Compile Include="Engines\GameEngine.cs" />
+    <Compile Include="GameObjects\Factories\EnemyFactory.cs" />
+    <Compile Include="GameObjects\Factories\IGameObjectFactroy.cs" />
+    <Compile Include="GameObjects\Factories\ProjectileFactory.cs" />
+    <Compile Include="GameObjects\YamatoProjectile.cs" />
+    <Compile Include="Misc\SimpleCollisionDetector.cs" />
+    <Compile Include="Data\PlayerHighscore.cs" />
+    <Compile Include="Misc\CollisionDetector.cs" />
     <Compile Include="Misc\KeyDownEventArgs.cs" />
     <Compile Include="Renderer\IRenderer.cs" />
     <Compile Include="GameObjects\Batwing.cs" />
-    <Compile Include="GameObjects\Enemy.cs" />
+    <Compile Include="GameObjects\Enemies\Enemy.cs" />
     <Compile Include="GameObjects\Position.cs" />
     <Compile Include="GameObjects\Projectile.cs" />
     <Compile Include="GameObjects\Size.cs" />
     <Compile Include="Renderer\WpfRenderer.cs" />
-    <Page Include="MainWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
+    <Compile Include="Data\XmlHighScoreStorage.cs" />
+    <Compile Include="Windows\GameOverWindow.xaml.cs">
+      <DependentUpon>GameOverWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\GameWindow.xaml.cs">
+      <DependentUpon>GameWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\HighScoreWindow.xaml.cs">
+      <DependentUpon>HighScoreWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\InitGameWindow.xaml.cs">
+      <DependentUpon>InitGameWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="GameObjects\GameObject.cs" />
-    <Compile Include="MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
+    <Page Include="Windows\GameOverWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Windows\GameWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Windows\HighScoreWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Windows\InitGameWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -119,7 +154,15 @@
     <Resource Include="Images\enemies\boss-enemy.png" />
     <Resource Include="Images\enemies\dragon1.gif" />
     <Resource Include="Images\enemies\enemy.png" />
-    <Resource Include="Images\enemies\mutalisk.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\background.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\gotham-city.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\gotham-city.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
